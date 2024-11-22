@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Admin Dashboard</h1>
+        </header>
+        <nav>
+            <ul>
+                <li><a href="#" onclick="navigateTo('dashboard')">Dashboard</a></li>
+                <li><a href="#" onclick="navigateTo('settings')">Settings</a></li>
+                <li><a href="#" onclick="navigateTo('loggedInUsers')">Logged-In Users</a></li>
+                <li><a href="#" onclick="navigateTo('ActivityUpdates')">Activity Updates</a></li>
+            </ul>
+        </nav>
+        <main id="content">
+            <section id="dashboard">
+                <h2>Dashboard Overview</h2>
+                <p>Welcome to the admin dashboard.</p>
+            </section>
+            <section id="settings" class="hidden">
+                <h2>Settings</h2>
+                <p>Settings options go here.</p>
+            </section>
+            <section id="loggedInUsers" class="hidden">
+                <h2>Logged-In Users</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Username</th>
+                            <th>Full Name</th>
+                            <th>Email</th>
+                            <th>Age</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbody1">
+                        <!-- Logged-in user rows will be inserted here -->
+                    </tbody>
+                </table>
+            </section>
+            <section id="ActivityUpdates" class="hidden">
+                <h2>Users Activity Updates</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Username</th>
+                            <th>Full Name</th>
+                            <th>Email</th>
+                            <th>Activity 1</th>
+                            <th>Activity 2</th>
+                            <th>Activity 3</th>
+                        </tr>
+                    </thead>
+                    <tbody id="activityTableBody">
+                        <!-- Activity updates will be inserted here -->
+                    </tbody>
+                </table>
+            </section>
+        </main>
+        <footer>
+            <p>&copy; 2024 Admin Dashboard</p>
+        </footer>
+    </div>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-app.js";
+        import { getFirestore, getDocs, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-firestore.js";
+
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyA5O5u9lr9ZMZ5EL16UdOG0CLtXuuehvmU",
+            authDomain: "pre-demo-f3dbe.firebaseapp.com",
+            databaseURL: "https://pre-demo-f3dbe-default-rtdb.firebaseio.com",
+            projectId: "pre-demo-f3dbe",
+            storageBucket: "pre-demo-f3dbe.appspot.com",
+            messagingSenderId: "284956869892",
+            appId: "1:284956869892:web:1a1f3dd516cf59036dbc51"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        var tbody = document.getElementById('tbody1');
+
+        function AddItemToTable(fullName, userName, email, age){
+            let trow = document.createElement("tr");
+            let td1 = document.createElement('td');
+            let td2 = document.createElement('td');
+            let td3 = document.createElement('td');
+            let td4 = document.createElement('td');
+
+            td1.innerHTML = fullName;
+            td2.innerHTML = userName;
+            td3.innerHTML = email;
+            td4.innerHTML = age;
+
+            trow.appendChild(td1);
+            trow.appendChild(td2);
+            trow.appendChild(td3);
+            trow.appendChild(td4);
+
+            tbody.appendChild(trow);
+        }
+
+        function AddAllItemsToTable(Users){
+            tbody.innerHTML = "";
+            Users.forEach(element => {
+                AddItemToTable(element.fullName, element.username, element.email, element.age);
+            });
+        }
+
+        async function GetAllDataRealtime(){
+            const dbRef = collection(db, "users");
+
+            onSnapshot(dbRef, (querySnapshot) => {
+                var loggedUsers = [];
+                querySnapshot.forEach(doc => {
+                    loggedUsers.push(doc.data());
+                });
+                AddAllItemsToTable(loggedUsers);
+            });
+        }
+
+        var activityTableBody = document.getElementById('activityTableBody');
+
+        function AddActivityToTable(userName, fullName, email, activity1, activity2, activity3) {
+            let trow = document.createElement("tr");
+            let td1 = document.createElement('td');
+            let td2 = document.createElement('td');
+            let td3 = document.createElement('td');
+            let td4 = document.createElement('td');
+            let td5 = document.createElement('td');
+            let td6 = document.createElement('td');
+
+            td1.innerHTML = userName;
+            td2.innerHTML = fullName;
+            td3.innerHTML = email;
+            td4.innerHTML = activity1;
+            td5.innerHTML = activity2;
+            td6.innerHTML = activity3;
+
+            trow.appendChild(td1);
+            trow.appendChild(td2);
+            trow.appendChild(td3);
+            trow.appendChild(td4);
+            trow.appendChild(td5);
+            trow.appendChild(td6);
+
+            activityTableBody.appendChild(trow);
+        }
+
+        function AddAllActivityItemsToTable(Activities) {
+            activityTableBody.innerHTML = "";
+            Activities.forEach(element => {
+                AddActivityToTable(element.username, element.fullName, element.email, element.activity1, element.activity2, element.activity3);
+            });
+        }
+
+       // Modify the function to fetch user activities
+async function GetAllUserActivities() {
+    const usersRef = collection(db, "users");
+    const snapshot = await getDocs(usersRef);
+    
+    var allActivities = [];
+    
+    snapshot.forEach(async (userDoc) => {
+        const activitiesRef = collection(userDoc.ref, "activity");
+        const activitySnapshot = await getDocs(activitiesRef);
+        
+        activitySnapshot.forEach((activityDoc) => {
+            const activityData = activityDoc.data();
+            // Assuming activityData has fields activity1, activity2, and activity3
+            allActivities.push({
+                username: userDoc.data().username,
+                fullName: userDoc.data().fullName,
+                email: userDoc.data().email,
+                activity1: activityData.activity1,
+                activity2: activityData.activity2,
+                activity3: activityData.activity3
+            });
+        });
+    });
+
+    return allActivities;
+}
+
+// Function to populate the table with all user activities
+async function PopulateAllUserActivities() {
+    const activities = await GetAllUserActivities();
+    AddAllActivityItemsToTable(activities);
+}
+
+// Call PopulateAllUserActivities() when needed, like on page load or when navigating to the Activity Updates section
+
+
+
+        window.onload = function () {
+            GetAllDataRealtime();
+            GetActivityDataRealtime();
+        };
+
+        // Navigation function to show the appropriate section
+        function navigateTo(sectionId) {
+            const sections = document.querySelectorAll('main > section');
+            sections.forEach(section => {
+                section.classList.add('hidden');
+            });
+            document.getElementById(sectionId).classList.remove('hidden');
+
+            if (sectionId === 'loggedInUsers') {
+                GetAllDataRealtime();
+            } else if (sectionId === 'ActivityUpdates') {
+                GetActivityDataRealtime();
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            // Attach the navigateTo function to all links with onclick attribute
+            const navLinks = document.querySelectorAll('nav a');
+            navLinks.forEach(link => {
+                link.addEventListener('click', function (event) {
+                    event.preventDefault();
+                    const sectionId = this.getAttribute('onclick').match(/'(.*?)'/)[1];
+                    navigateTo(sectionId);
+                });
+            });
+
+            // Example initial navigation
+            navigateTo('dashboard');
+        });
+    </script>
+</body>
+</html>

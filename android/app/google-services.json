@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "579335202215",
+    "project_id": "budget-app4",
+    "storage_bucket": "budget-app4.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:579335202215:android:e9cb5e30934ef65493c282",
+        "android_client_info": {
+          "package_name": "com.example.flutter_application_4"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB3lV1HDP3lplSsaFO5UIJjJXplmTe-870"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

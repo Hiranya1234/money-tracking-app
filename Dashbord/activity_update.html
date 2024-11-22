@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Admin Dashboard</h1>
+        </header>
+        <nav>
+            <ul>
+                <li><a href="#" onclick="navigateTo('dashboard')">Dashboard</a></li>
+                
+                <li><a href="#" onclick="navigateTo('loggedInUsers')">Logged-In Users</a></li>
+                <li><a href="#" onclick="navigateTo('ActivityUpdates')">Activity Updates</a></li>
+            </ul>
+        </nav>
+        <main id="content">
+            <section id="dashboard">
+                <h2>Dashboard Overview</h2>
+                <p>Welcome to the admin dashboard.</p>
+            </section>
+            <section id="settings" class="hidden">
+                <h2>Settings</h2>
+                <p>Settings options go here.</p>
+            </section>
+            <section id="loggedInUsers" class="hidden">
+                <h2>Logged-In Users</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Username</th>
+                            <th>Full Name</th>
+                            <th>Email</th>
+                            <th>Age</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbody1">
+                        <!-- Logged-in user rows will be inserted here -->
+                    </tbody>
+                </table>
+            </section>
+            <section id="ActivityUpdates" class="hidden">
+                <h2>User Activity</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Username</th>
+                            <th>Email</th>
+                            <th>Easy</th>
+                            <th>Medium</th>
+                            <th>Hard</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="activityTbody">
+                        <!-- Activity update rows will be inserted here -->
+                    </tbody>
+                </table>
+            </section>
+            <script type="module">
+                // Initialize Firebase
+                import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-app.js";
+                const firebaseConfig = {
+                    apiKey: "AIzaSyA5O5u9lr9ZMZ5EL16UdOG0CLtXuuehvmU",
+                    authDomain: "pre-demo-f3dbe.firebaseapp.com",
+                    databaseURL: "https://pre-demo-f3dbe-default-rtdb.firebaseio.com",
+                    projectId: "pre-demo-f3dbe",
+                    storageBucket: "pre-demo-f3dbe.appspot.com",
+                    messagingSenderId: "284956869892",
+                    appId: "1:284956869892:web:1a1f3dd516cf59036dbc51"
+                };
+                const app = initializeApp(firebaseConfig);
+            
+                // Initialize Firestore
+                import { getFirestore, getDocs, collection, doc, onSnapshot, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-firestore.js";
+                const db = getFirestore();
+            
+                // Get references to table bodies
+                var userTbody = document.getElementById('tbody1');
+                var activityTbody = document.getElementById('activityTbody');
+            
+                // Function to add rows to the user table
+                function AddItemToTable(fullName, userName, email, age, userId){
+                    let trow = document.createElement("tr");
+                    let td1 = document.createElement('td');
+                    let td2 = document.createElement('td');
+                    let td3 = document.createElement('td');
+                    let td4 = document.createElement('td');
+                    let td5 = document.createElement('td');
+                    let button = document.createElement('button');
+            
+                    td1.innerHTML = fullName;
+                    td2.innerHTML = userName;
+                    td3.innerHTML = email;
+                    td4.innerHTML = age;
+            
+                    button.innerHTML = 'Delete';
+                    button.onclick = function() {
+                        deleteUser(userId);
+                    };
+                    td5.appendChild(button);
+            
+                    trow.appendChild(td1);
+                    trow.appendChild(td2);
+                    trow.appendChild(td3);
+                    trow.appendChild(td4);
+                    trow.appendChild(td5);
+            
+                    userTbody.appendChild(trow);
+                }
+            
+                // Function to add rows to the activity table
+                function AddActivityItemToTable(username, email, activity1, activity2, activity3){
+                    let trow = document.createElement("tr");
+                    let td1 = document.createElement('td');
+                    let td2 = document.createElement('td');
+                    let td3 = document.createElement('td');
+                    let td4 = document.createElement('td');
+                    let td5 = document.createElement('td');
+                    let td6 = document.createElement('td');
+                    let button = document.createElement('button');
+            
+                    td1.innerHTML = username;
+                    td2.innerHTML = email;
+                    td3.innerHTML = activity1 ? 'Completed' : 'Incomplete';
+                    td4.innerHTML = activity2 ? 'Completed' : 'Incomplete';
+                    td5.innerHTML = activity3 ? 'Completed' : 'Incomplete';
+                    
+                    button.innerHTML = 'Send Email';
+                    button.onclick = function() {
+                        if (activity1 && activity2 && activity3) {
+                            sendEmail(username, email);
+                        } else {
+                            alert('All activities are not completed.');
+                        }
+                    };
+                    td6.appendChild(button);
+            
+                    trow.appendChild(td1);
+                    trow.appendChild(td2);
+                    trow.appendChild(td3);
+                    trow.appendChild(td4);
+                    trow.appendChild(td5);
+                    trow.appendChild(td6);
+            
+                    activityTbody.appendChild(trow);
+                }
+            
+                // Function to send email
+                function sendEmail(username, email) {
+                    // Add your email sending logic here
+                    alert(`Email sent to ${username} (${email})`);
+                }
+            
+                // Function to delete user
+                async function deleteUser(userId) {
+                    try {
+                        await deleteDoc(doc(db, "users", userId));
+                        alert('User deleted successfully.');
+                        displayLoggedInUsers(); // Refresh the table
+                    } catch (error) {
+                        console.error("Error deleting user: ", error);
+                    }
+                }
+            
+                // Fetch and display user data
+                function displayLoggedInUsers() {
+                    const dbRef = collection(db, "users");
+                    onSnapshot(dbRef, (querySnapshot) => {
+                        var loggedUsers = [];
+                        querySnapshot.forEach(doc => {
+                            let userData = doc.data();
+                            userData.id = doc.id; // Add userId to the user data
+                            loggedUsers.push(userData);
+                        });
+                        userTbody.innerHTML = "";
+                        loggedUsers.forEach(user => {
+                            AddItemToTable(user.fullName, user.username, user.email, user.age, user.id);
+                        });
+                    });
+                }
+            
+                // Fetch and display activity data
+                async function displayActivityUpdates() {
+                    const dbRef = collection(db, "users");
+                    onSnapshot(dbRef, async (querySnapshot) => {
+                        var activities = [];
+                        for (const userDoc of querySnapshot.docs) {
+                            const userData = userDoc.data();
+                            const activityRef = collection(db, `users/${userDoc.id}/activity`);
+                            const activitySnapshot = await getDocs(activityRef);
+                            let activityData = {
+                                username: userData.username,
+                                email: userData.email,
+                                activity1: false,
+                                activity2: false,
+                                activity3: false
+                            };
+                            activitySnapshot.forEach(activityDoc => {
+                                activityData[activityDoc.id] = activityDoc.data().completed;
+                            });
+                            activities.push(activityData);
+                        }
+                        activityTbody.innerHTML = "";
+                        activities.forEach(activity => {
+                            AddActivityItemToTable(activity.username, activity.email, activity.activity1, activity.activity2, activity.activity3);
+                        });
+                    });
+                }
+            
+                // Load data on window load
+                window.onload = function() {
+                    displayLoggedInUsers();
+                    displayActivityUpdates();
+                }
+            </script>
+        </main>
+        <footer>
+            <p>&copy; 2024 Admin Dashboard</p>
+        </footer>
+    </div>
+    <script src="scripts.js"></script>
+</body>
+</html>
+

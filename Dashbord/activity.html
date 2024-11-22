@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Activity 1 Data</title>
+    <style>
+        /* Add your CSS styles here */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #dddddd;
+            text-align: left;
+            padding: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Activity 1 Data</h1>
+        <table id="activityTable">
+            <thead>
+                <tr>
+                    <th>Username</th>
+                    <th>Full Name</th>
+                    <th>Email</th>
+                    <th>Completed</th>
+                </tr>
+            </thead>
+            <tbody id="activityTableBody">
+                <!-- Table rows will be inserted here -->
+            </tbody>
+        </table>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/10.12.3/firebase-app.js"></script>
+    
+    <script>
+        // Initialize Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyA5O5u9lr9ZMZ5EL16UdOG0CLtXuuehvmU",
+            authDomain: "pre-demo-f3dbe.firebaseapp.com",
+            databaseURL: "https://pre-demo-f3dbe-default-rtdb.firebaseio.com",
+            projectId: "pre-demo-f3dbe",
+            storageBucket: "pre-demo-f3dbe.appspot.com",
+            messagingSenderId: "284956869892",
+            appId: "1:284956869892:web:1a1f3dd516cf59036dbc51"
+        };
+        firebase.initializeApp(firebaseConfig);
+
+        import {
+        getFirestore, getDocs, collection, onSnapshot
+        }  from "https://www.gstatic.com/firebasejs/10.12.3/firebase-firestore.js";
+
+        // Initialize Firestore
+        const db = firebase.firestore();
+
+        // Function to fetch and display activity1 data
+        async function GetActivity1Data() {
+            try {
+                // Fetch activity1 data
+                const activity1Ref = db.collection("users").doc("BtQqfRUEGXRvAmh19yldwztW8Kr1")
+                                    .collection("activity").doc("activity1");
+                const activity1Snapshot = await activity1Ref.get();
+
+                if (activity1Snapshot.exists) {
+                    // Fetch user data (fullName, username, email) from 'users' collection
+                    const userRef = db.collection("users").doc("BtQqfRUEGXRvAmh19yldwztW8Kr1");
+                    const userSnapshot = await userRef.get();
+
+                    if (userSnapshot.exists) {
+                        const userData = userSnapshot.data();
+                        const { fullName, username, email } = userData;
+
+                        // Get activity1 data
+                        const activityData = activity1Snapshot.data();
+                        const { completed } = activityData;
+
+                        // Add data to the table
+                        AddActivityToTable(username, fullName, email, completed);
+                    } else {
+                        console.log("No such user document!");
+                    }
+                } else {
+                    console.log("No such activity1 document!");
+                }
+            } catch (error) {
+                console.error("Error fetching data:", error);
+            }
+        }
+
+        // Function to add data to the table
+        function AddActivityToTable(username, fullName, email, completed) {
+            const activityTableBody = document.getElementById('activityTableBody');
+
+            let trow = document.createElement("tr");
+            let td1 = document.createElement('td');
+            let td2 = document.createElement('td');
+            let td3 = document.createElement('td');
+            let td4 = document.createElement('td');
+
+            td1.innerHTML = username || "-";
+            td2.innerHTML = fullName || "-";
+            td3.innerHTML = email || "-";
+            td4.innerHTML = completed ? "true" : "false";
+
+            trow.appendChild(td1);
+            trow.appendChild(td2);
+            trow.appendChild(td3);
+            trow.appendChild(td4);
+
+            activityTableBody.appendChild(trow);
+        }
+
+        // Call GetActivity1Data() when the page loads
+        document.addEventListener('DOMContentLoaded', function () {
+            GetActivity1Data();
+        });
+    </script>
+</body>
+</html>
+
+
